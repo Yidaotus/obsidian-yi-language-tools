@@ -1,0 +1,10 @@
+{
+	"id": "yi-language-tools",
+	"name": "Yi Language Tools",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Tools to enhance your experience learning languages in Obsidian",
+	"author": "Yidaotus",
+	"authorUrl": "https://yidaou.dev",
+	"isDesktopOnly": false
+}
