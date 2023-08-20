@@ -207,8 +207,9 @@ export default class YiLanguageToolsPlugin extends Plugin {
 					`${targetFolder.path}/${selection}.md`
 				);
 
+				const zeroWidthSpace = "​";
 				editor.replaceRange(
-					`[[${selection}|${selection}]]`,
+					`[[${selection}|${selection}${zeroWidthSpace}]]`,
 					editor.getCursor("from"),
 					editor.getCursor("to")
 				);
