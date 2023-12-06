@@ -10,20 +10,20 @@ This plugin requires [Obsidian Dataview](https://github.com/blacksmithgu/obsidia
 
 ### Vocabulary Extractor
 
-Extract vocabulary to it's own card. This will replace the selected text with a link to the card. The link will persist even when changing the title of the new card.
+Extract vocabulary to its own card. This will replace the selected text with a link to the card. The link will persist even when changing the title of the new card.
 The template to use for every card, can be set in the settings menu.
 
 ### Fragment Extractor
 
-Sometimes a text is too big to learn in one go. This utility will extract the selected text to a template you can chose in the settings menu, and embeds it in the current document.
+Sometimes a text is too big to learn in one go. This utility will extract the selected text to a template you can choose in the settings menu, and embeds it in the current document.
 
 ### Dictionary Lookup
 
-Let's you open the highlighted text in any of your preferred dictionary sites.
+Lets you open the highlighted text in any of your preferred dictionary sites.
 
 ### "SRS" Panel
 
-Let's you review all vocabulary of the active document in an SRS like panel. For this to work the following dataview fields need to be set on the target card notes.
+Lets you review all vocabulary of the active document in an SRS like panel. For this to work, the following dataview fields need to be set on the target card notes.
 
 -   `card: vocab`
 -   `spelling`
@@ -38,7 +38,7 @@ See the example template below to get an idea on how to incorporate those fields
 
 ## Example Workflow
 
-For every text, I create an index page and then split the text in fragments and add a new Note with the fragment. The plugin automatically creates a new Note with the correct naming and links the selected part back to the original index page. There I link the part of the audio for this fragment and start marking new vocabulary, which auto creates a new vocabulary note. At the end of each fragment note is a dataview with all the vocabulary added.
+For every text, I create an index page and then split the text in fragments and add a new Note with the fragment. The plugin automatically creates a new Note with the correct naming and links the selected part back to the original index page. There, I link the part of the audio for this fragment and start marking new vocabulary, which auto creates a new vocabulary note. At the end of each fragment note is a dataview with all the vocabulary added.
 | | |
 | ---------------------------- | ----------------------------- |
 | ![image](/preview/p1.png) | ![image](/preview/p2.png) |
