@@ -57,10 +57,17 @@ export class SRSView extends ItemView {
 			await this.getCardsForActiveFile();
 			this.updateView();
 		});
+		this.initialLoad();
+	}
+
+	async initialLoad() {
+		await this.getCardsForActiveFile();
+		this.updateView();
 	}
 
 	updateView() {
 		this.srsComponent.$set({ cards: this.vocab });
+		this.srsComponent.reset();
 	}
 
 	getViewType() {
