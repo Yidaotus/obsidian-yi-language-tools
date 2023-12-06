@@ -1,6 +1,8 @@
+import SRSComponent from "components/SRS.svelte";
 import {
 	App,
 	Editor,
+	ItemView,
 	MarkdownView,
 	Notice,
 	Plugin,
@@ -8,7 +10,10 @@ import {
 	Setting,
 	TFile,
 	TFolder,
+	WorkspaceLeaf,
+	type MarkdownFileInfo,
 } from "obsidian";
+import { DataviewApi, getAPI } from "obsidian-dataview";
 
 interface LookupSource {
 	name: string;
@@ -31,8 +36,83 @@ const DEFAULT_SETTINGS: YiLangToolsSettings = {
 	lookupSources: [],
 };
 
+export const VIEW_TYPE_SRS = "srs-view";
+
+export type Vocab = {
+	front: string;
+	back: string;
+	spelling?: string;
+};
+
+export class SRSView extends ItemView {
+	srsComponent!: SRSComponent;
+	numWords: number = 0;
+	api: DataviewApi | undefined = undefined;
+	vocab: Array<Vocab> = [];
+
+	constructor(leaf: WorkspaceLeaf) {
+		super(leaf);
+		this.api = getAPI();
+		this.app.workspace.on("active-leaf-change", async () => {
+			await this.getCardsForActiveFile();
+			this.updateView();
+		});
+	}
+
+	updateView() {
+		this.srsComponent.$set({ cards: this.vocab });
+	}
+
+	getViewType() {
+		return VIEW_TYPE_SRS;
+	}
+
+	getDisplayText() {
+		return "SRS";
+	}
+
+	async getCardsForActiveFile() {
+		const activeFile = this.app.workspace.getActiveFile();
+		if (activeFile) {
+			if (!this.api) {
+				new Notice("This feature only works if dataview is installed!");
+				return;
+			}
+
+			const query = await this.api.query(
+				'TABLE file.name as "Vocab", translations as "Translation", spelling as Spelling FROM outgoing([[]]) WHERE card',
+				activeFile.path
+			);
+
+			if (query.successful) {
+				this.vocab = query.value.values.map((qv) => ({
+					front: qv[1],
+					back: qv[2],
+					spelling: qv[3] || "",
+				}));
+			}
+		}
+	}
+
+	async onOpen() {
+		const container = this.containerEl.children[1];
+		container.empty();
+
+		this.srsComponent = new SRSComponent({
+			target: container,
+			props: { cards: this.vocab },
+		});
+	}
+
+	async onClose() {
+		if (this.srsComponent) {
+			this.srsComponent.$destroy();
+		}
+	}
+}
+
 export default class YiLanguageToolsPlugin extends Plugin {
-	settings: YiLangToolsSettings;
+	settings!: YiLangToolsSettings;
 
 	private lookup(word: string, targetUrl: string) {
 		window.open(
@@ -43,6 +123,8 @@ export default class YiLanguageToolsPlugin extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
+
+		this.registerView(VIEW_TYPE_SRS, (leaf) => new SRSView(leaf));
 
 		this.registerEvent(
 			this.app.workspace.on("editor-menu", (menu, editor, view) => {
@@ -78,9 +160,34 @@ export default class YiLanguageToolsPlugin extends Plugin {
 		);
 
 		this.addCommand({
+			id: "view-srs",
+			name: "View all vocab you need to learn",
+			editorCallback: async (
+				editor: Editor,
+				view: MarkdownView | MarkdownFileInfo
+			) => {
+				this.app.workspace.detachLeavesOfType(VIEW_TYPE_SRS);
+
+				await this.app.workspace.getRightLeaf(false).setViewState({
+					type: VIEW_TYPE_SRS,
+					active: true,
+				});
+
+				this.app.workspace.revealLeaf(
+					this.app.workspace.getLeavesOfType(VIEW_TYPE_SRS)[0]
+				);
+
+				// console.log({ all: allPages });
+			},
+		});
+
+		this.addCommand({
 			id: "add-fragment",
 			name: "Add Text Fragment",
-			editorCallback: async (editor: Editor, view: MarkdownView) => {
+			editorCallback: async (
+				editor: Editor,
+				view: MarkdownView | MarkdownFileInfo
+			) => {
 				if (!view.file) {
 					new Notice("Please open a file first!");
 					return;
@@ -146,7 +253,10 @@ export default class YiLanguageToolsPlugin extends Plugin {
 		this.addCommand({
 			id: "add-vocab",
 			name: "Add vocabulary",
-			editorCallback: async (editor: Editor, view: MarkdownView) => {
+			editorCallback: async (
+				editor: Editor,
+				view: MarkdownView | MarkdownFileInfo
+			) => {
 				if (!view.file) {
 					new Notice("Please open a file first!");
 					return;
