@@ -319,9 +319,17 @@ export default class YiLanguageToolsPlugin extends Plugin {
 					return;
 				}
 
-				const newVocabFile = await this.app.vault.copy(
-					vocabTemplate,
-					`${targetFolder.path}/${selection}.md`
+				const targetFileContent = await this.app.vault.cachedRead(
+					vocabTemplate
+				);
+
+				const newFileContentFromTemplate = targetFileContent.replace(
+					"{{title}}",
+					selection
+				);
+				const newVocabFile = await this.app.vault.create(
+					`${targetFolder.path}/${selection}.md`,
+					newFileContentFromTemplate
 				);
 
 				const zeroWidthSpace = "​";
