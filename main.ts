@@ -319,19 +319,31 @@ export default class YiLanguageToolsPlugin extends Plugin {
 					return;
 				}
 
-				const targetFileContent = await this.app.vault.cachedRead(
-					vocabTemplate
-				);
+				const targetFilePath = `${targetFolder.path}/${selection}.md`;
+				let targetAbstractVocabFile =
+					this.app.vault.getAbstractFileByPath(targetFilePath);
 
-				const newFileContentFromTemplate = targetFileContent.replace(
-					"{{title}}",
-					selection
-				);
-				const newVocabFile = await this.app.vault.create(
-					`${targetFolder.path}/${selection}.md`,
-					newFileContentFromTemplate
-				);
+				if (targetAbstractVocabFile instanceof TFolder) {
+					new Notice(
+						"Targeted Vocab File is a Folder! This should never be the case?!"
+					);
+					return;
+				}
+				let targetVocabFile: TFile | null =
+					targetAbstractVocabFile as TFile | null;
 
+				if (!targetVocabFile) {
+					const targetFileContent = await this.app.vault.cachedRead(
+						vocabTemplate
+					);
+
+					const newFileContentFromTemplate =
+						targetFileContent.replace("{{title}}", selection);
+					targetVocabFile = await this.app.vault.create(
+						targetFilePath,
+						newFileContentFromTemplate
+					);
+				}
 				const zeroWidthSpace = "​";
 				editor.replaceRange(
 					`[[${selection}|${selection}${zeroWidthSpace}]]`,
@@ -340,7 +352,7 @@ export default class YiLanguageToolsPlugin extends Plugin {
 				);
 
 				if (this.settings.openVocabOnCreate) {
-					this.app.workspace.getLeaf("tab").openFile(newVocabFile);
+					this.app.workspace.getLeaf("tab").openFile(targetVocabFile);
 				}
 			},
 		});
